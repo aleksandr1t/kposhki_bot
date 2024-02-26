@@ -1,9 +1,10 @@
 from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
 
-pass_question_keyboard = ReplyKeyboardMarkup(
+nick_keyboard = ReplyKeyboardMarkup(
     keyboard=[
         [
-            KeyboardButton(text="Пропустить вопрос")
+            KeyboardButton(text="Да"),
+            KeyboardButton(text="Нет, изменить ник")
         ]
     ],
     resize_keyboard=True,

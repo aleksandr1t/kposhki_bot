@@ -20,25 +20,23 @@ class BaseModel(Model):
         order_by = 'id'
 
 
-class FormTransaction(BaseModel):
-    time_of_creation = DateTimeField()
-    telegram_id = IntegerField()
-    form_item = CharField()
-    current_state = CharField()
-
-    class Meta:
-        db_table = 'form_transactions'
-
-
 class FSMForm(BaseModel):
-    telegram_id = IntegerField()
-    nick = CharField(null=True)
     time_of_creation = DateTimeField()
-    about_player = CharField()
-    what_to_do = CharField()
-    game_experience = CharField()
+    nick = CharField(null=True)
+    telegram_id = IntegerField()
+
+    about_player = CharField(null=True)
+    is_about_player_text = BooleanField(null=True)
+
+    what_to_do = CharField(null=True)
+    is_what_to_do_text = BooleanField(null=True)
+
+    game_experience = CharField(null=True)
+    is_game_experience_text = BooleanField(null=True)
+
     garik_relationship = CharField(null=True)
     is_filled = BooleanField()
+    verdict = BooleanField(null=True)
 
     class Meta:
         db_table = 'forms'
@@ -63,3 +61,18 @@ class Payment(BaseModel):
 
     class Meta:
         db_table = 'payments'
+
+
+'''
+class FormTransaction(BaseModel):
+    time_of_creation = DateTimeField()
+    telegram_id = IntegerField()
+    form_item = CharField()
+    current_state = CharField()
+
+    class Meta:
+        db_table = 'form_transactions'
+'''
+
+
+# db.create_tables([FSMForm, Ban, Payment])
