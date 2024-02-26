@@ -22,13 +22,19 @@ async def select_verdict(call: CallbackQuery):
 
     if verdict:
         await inform_user_about_positive_verdict(form_user_id, form_id)
-        await call.message.answer(text=f'<a href="tg://user?id={call.from_user.id}">Вы</a> '
-                                       f'утвердили добавление игрока на сервер.\n'
-                                       f'Информация передана пользователю!')
+        answer = (f'{call.message.text[:-1]} ✅ Одобрено '
+                  f'(решение принял <a href="tg://user?id={call.from_user.id}">этот админ</a>)')
+        await call.message.edit_text(text=answer)
+        # await call.message.answer(text=f'<a href="tg://user?id={call.from_user.id}">Вы</a> '
+        #                                f'утвердили добавление игрока на сервер.\n'
+        #                                f'Информация передана пользователю!')
     else:
         await inform_user_about_negative_verdict(form_user_id, form_id)
-        await call.message.answer(text=f'<a href="tg://user?id={call.from_user.id}">Вы</a> '
-                                       f'отказали к допуску игроку по заявке.')
+        answer = (f'{call.message.text[:-1]} ❌ Отказано '
+                  f'(решение принял <a href="tg://user?id={call.from_user.id}">этот админ</a>)')
+        await call.message.edit_text(text=answer)
+        # await call.message.answer(text=f'<a href="tg://user?id={call.from_user.id}">Вы</a> '
+        #                                f'отказали к допуску игроку по заявке.')
     await call.answer()
 
 

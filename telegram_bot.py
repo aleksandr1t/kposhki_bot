@@ -1,7 +1,5 @@
 import os
-
-import redis
-
+import redis.asyncio as redis
 from model_db import *
 from utils import states
 from config import TOKEN_epta, rediska
@@ -24,7 +22,7 @@ server_ip = '147.185.221.18:35666'
 TOKEN = TOKEN_epta
 bot = Bot(TOKEN, parse_mode=ParseMode.HTML)
 
-storage = RedisStorage(redis.from_url(f'redis://:{rediska}@localhost:6379/0'))
+storage = RedisStorage(redis.Redis(host="172.31.99.45", port=6379, username="kposhnik", password=f'{rediska}'))
 
 dp = Dispatcher(storage=storage)
 dp.callback_query.register(callback.select_verdict)
@@ -40,7 +38,6 @@ async def inform_user_about_positive_verdict(form_user_id: int, form_id: int):
 
     state_with: FSMContext = FSMContext(storage=dp.storage, key=StorageKey(
         chat_id=form_user_id, user_id=form_user_id, bot_id=bot.id))
-    print(state_with.storage)
 
     await state_with.set_state(states.NickConfirm.nick)
     await bot.send_message(form_user_id, f"Введите Ваш ник в Minecraft \n"
@@ -57,6 +54,14 @@ async def inform_user_about_negative_verdict(form_user_id: int, form_id: int):
                            f'В следующий раз Вы можете попытать удачу и заполнить анкету ещё раз, '
                            f'написав команду /new_form\n\n'
                            f'Спасибо за обращение!')
+
+
+async def announce_nick_admin(nick: str, nick_telegram_id: int):
+    await bot.send_message(1027005788,
+                           f'Приветики...\n'
+                           f'нужно добавить в вайтлист <a href>челика под ником <code>{nick}</code>.\n\n'
+                           f''
+                           f'Надеюсь, ты сделаешь это как можно скорее!')
 
 
 async def main():
@@ -131,7 +136,11 @@ async def send_to_channel(data: dict, user_id: int):
             await bot.send_message(channel_id, f'<b>Вопрос №3</b> Опыт игры')
         await bot.send_voice(channel_id, FSInputFile(f"voices/{user_id}/{data['game_experience']}.ogg"))
 
-    await bot.send_message(channel_id, f'Руководствуясь общими правилами рассмотрения заявок, '
+    await bot.send_message(channel_id, f'<b>Вопрос №4</b> Умеет ли человек играть на камнях\n\n'
+                                       f''
+                                       f'{data['garik_relationship']}\n\n\n'
+                                       f''
+                                       f'Руководствуясь общими правилами рассмотрения заявок, '
                                        f'Вы, как уполномоченное лицо по рассмотрению заявок, '
                                        f'утверждаете, что в рассмотрении завяки вы выносите вердикт:\n\n'
                                        f''

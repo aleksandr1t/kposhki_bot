@@ -3,7 +3,7 @@ from aiogram.types import ReplyKeyboardRemove
 from utils.states import *
 from keyboards.keyboards import *
 from model_db import *
-from telegram_bot import handle_file, send_to_channel, server_ip
+from telegram_bot import handle_file, send_to_channel, server_ip, announce_nick_admin
 from aiogram.fsm.context import FSMContext
 
 router = Router()
@@ -29,7 +29,7 @@ async def form_state_about_player(message: Message, state: FSMContext):
                              f"<i>Вы можете отправить голосовое сообщение или текст</i>")
         return
     elif message.text.lower() in ['/new_form', '/start']:
-        await message.answer(f"Для начала заполни оставшуюся форму")
+        await message.answer(f"Для начала ответь на этот вопрос!")
         return
     elif len(message.text) < 10:
         await message.answer(f"Маловато как-то. Напиши побольше о себе ну пж🙏")
@@ -72,9 +72,13 @@ async def form_state_what_to_do(message: Message, state: FSMContext):
                              f"\n"
                              f"Вы можете отправить голосовое сообщение или текст</i>")
         return
+    elif message.text.lower() in ['/new_form', '/start']:
+        await message.answer(f"Для начала ответь на этот вопрос!")
+        return
     else:
         data = message.text
         is_text = True
+
     await message.answer(f"Угу. Идем дальше.")
     await state.update_data(what_to_do=data)
     state_data = await state.get_data()
@@ -109,7 +113,8 @@ async def form_state_game_experience(message: Message, state: FSMContext):
                              f"\n"
                              f"Вы можете отправить голосовое сообщение или текст</i>")
         return
-
+    elif message.text.lower() in ['/new_form', '/start']:
+        await message.answer(f"Для начала ответь на этот вопрос!")
     else:
         data = message.text
         is_text = True
@@ -135,6 +140,9 @@ async def form_state_game_experience(message: Message, state: FSMContext):
 @router.message(NickConfirm.confirm)
 async def form_state_nick_confirm(message: Message, state: FSMContext):
     data = await state.get_data()
+    if message.text.lower() in ['/new_form', '/start']:
+        await message.answer(f"Вы уже практически на сервере. Эта команда бесполезна, она ни на что не повлияет.")
+        return
     if message.text == 'Да':
         (FSMForm.update(
             nick=data['nick']).where(FSMForm.telegram_id == message.from_user.id)
@@ -142,10 +150,22 @@ async def form_state_nick_confirm(message: Message, state: FSMContext):
 
         await message.answer(f"Отлично!\n\n"
                              f""
-                             f"Присоединиться к серверу Вы сможете по IP {server_ip}\n"
-                             f"Учтите, что добавление Вашего ника в вайтлист может занять до 3 часов.\n"
+                             f"Информация по серверу для входа:\n"
+                             f"IP: {server_ip}\n"
+                             f"Версия 1.20.4, если Вам нужен войсчат, "
+                             f"то выбирайте Fabric (<a href=\"https://cdn.modrinth.com/data/1bZhdhsH/versions/"
+                             f"fykZJcya/plasmovoice-fabric-1.20.3-2.0.8.jar\">мод на войсчат</a>).\n"
+                             f"Рекомендуем бесплатный лаучнер с открытым исходным кодом "
+                             f"<a href=\"https://llaun.ch/installer\">Legacy Launcher</a>"
+                             f" (ссылка для скачивания на Windows)\n\n"
+                             f""
+                             f"Также, Вы можете <a href=\"https://discord.gg/tnFbrEPnpC\">вступить в Discord сервер "
+                             f"Олбанцы</a> и не пропускать новости о собятиях сервера\n\n"
+                             f"Учтите, что добавление Вашего ника в вайтлист может занять до ∞ часов.\n"
                              f"Спасибо, что Вы с нами!", reply_markup=ReplyKeyboardRemove())
+        await announce_nick_admin(data['nick'], message.from_user.id)
         await state.clear()
+
     elif message.text == 'Нет, изменить ник':
         await message.answer(f"Введите Ваш ник в Minecraft \n"
                              f"\n"
@@ -176,9 +196,20 @@ async def form_state_nick_nick(message: Message, state: FSMContext):
                              f"поэтому подумайте, прежде чем писать</i>")
         return
 
+    import string
     if FSMForm.select().where(FSMForm.nick == msg).count():
         await message.answer(f"К сожалению, этот ник занят. \n"
                              f"Попробуйте другой((")
+        return
+    elif message.text.lower() in ['/new_form', '/start']:
+        await message.answer(f"Вы уже практически на сервере. Эта команда бесполезна, она ни на что не повлияет.")
+        return
+
+    elif all(map(lambda c: c not in (string.punctuation + string.digits + string.ascii_letters), message.text)):
+        await message.answer(f"Ник должен состоять только из символов латиницы, цифр и спецсимволов")
+        return
+    elif len(message.text.lower()) < 4:
+        await message.answer(f"Ник слишком короткий.")
         return
 
     await state.update_data(nick=msg)
