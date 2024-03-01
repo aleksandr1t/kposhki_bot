@@ -2,12 +2,12 @@ import os
 import redis.asyncio as redis
 from model_db import *
 from utils import states
-from config import TOKEN_epta, rediska
+from config import TOKEN_epta, rediska, username_redis
 from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
 from aiogram.fsm.context import FSMContext
 from handlers import quetionaire, builders
-from aiogram.fsm.storage.base import StorageKey, BaseStorage
+from aiogram.fsm.storage.base import StorageKey
 from handlers import commands
 from handlers import callback
 import asyncio
@@ -17,12 +17,13 @@ from aiogram.types import FSInputFile
 from aiogram.fsm.storage.redis import RedisStorage
 
 
-server_ip = '147.185.221.18:35666'
+# server_ip = '147.185.221.18:35666'
+server_ip = 'ещё нет, появится в день релиза!'
 
 TOKEN = TOKEN_epta
 bot = Bot(TOKEN, parse_mode=ParseMode.HTML)
 
-storage = RedisStorage(redis.Redis(host="172.31.99.45", port=6379, username="kposhnik", password=f'{rediska}'))
+storage = RedisStorage(redis.Redis(host="172.17.49.238", port=6379, username=username_redis, password=f'{rediska}'))
 
 dp = Dispatcher(storage=storage)
 dp.callback_query.register(callback.select_verdict)
@@ -59,7 +60,8 @@ async def inform_user_about_negative_verdict(form_user_id: int, form_id: int):
 async def announce_nick_admin(nick: str, nick_telegram_id: int):
     await bot.send_message(1027005788,
                            f'Приветики...\n'
-                           f'нужно добавить в вайтлист <a href>челика под ником <code>{nick}</code>.\n\n'
+                           f'нужно добавить в вайтлист <a href="tg://user?id={nick_telegram_id}"'
+                           f'>челика</a> под ником <code>{nick}</code>.\n\n'
                            f''
                            f'Надеюсь, ты сделаешь это как можно скорее!')
 
